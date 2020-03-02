@@ -6,6 +6,8 @@ import java.io.FileNotFoundException;
 
 public class Manager {
     public static void main(String[] args) throws FileNotFoundException{
+
+        // String path = "/home/qhazale/lessons/java/files/";
         
         System.out.println("Please enter the path of directory which contains your .txt files (example: /home/qhazale/lessons/java/files/)");
         Scanner scanner = new Scanner(System.in);
@@ -14,31 +16,12 @@ public class Manager {
         scanner = new Scanner(System.in);
         String[] searchWord = scanner.nextLine().split(" ");
 
-        // String path = "/home/qhazale/lessons/java/files/";
         FileReader reader = new FileReader();
         File[] files = reader.readFiles(path);
 
         Searcher search = new Searcher();
-        if(searchWord.length > 3){
-            for(File f:files){
-                search.searchTypeFour(f, searchWord);
-            }
-        }
-        else if(searchWord.length == 1){
-            for(File f:files){
-                search.searchTypeOne(f, searchWord[0]);
-            }
-        }
-        else if(searchWord[1].equals("AND")){
-            for(File f:files){
-                search.searchTypeTwo(f, searchWord[0], searchWord[2]);
-            }
-        }
-        else if(searchWord[1].equals("OR")){
-            for(File f:files){
-                search.searchTypeThree(f, searchWord[0], searchWord[2]);
-            }
-
+        for(File file:files){
+            search.findWords(file, searchWord);
         }
     }
 }
@@ -55,95 +38,57 @@ public class FileReader {
 
 public class Searcher {
 
-    public void searchTypeOne(File f, String searchWord) throws FileNotFoundException{
-        Scanner s = new Scanner(f);
-        while(s.hasNextLine()){
-            String nextLine = s.nextLine();
-            if(nextLine.contains(searchWord)){
-                System.out.println(f);
-            }
+    public void findWords(File file, String[] searchWord) throws FileNotFoundException{
+        Scanner scan = new Scanner(file);
+        boolean wordExists[] = new boolean[searchWord.length];
+        for(int i =0;i<wordExists.length;i++){
+            wordExists[i]= false;
         }
-    }
 
-
-    public void searchTypeTwo(File f, String searchWord1,String searchWord2) throws FileNotFoundException{
-        Scanner s = new Scanner(f);
-        boolean word1Existance = false, word2Existance = false;
-        while(s.hasNextLine()){
-            String nextLine = s.nextLine();
-            if(nextLine.contains(searchWord1)){
-                word1Existance = true;
-            }
-            if(nextLine.contains(searchWord2)){
-                word2Existance = true;
-            }
-        }
-        if(word1Existance && word2Existance){
-            System.out.println(f);
-        }
-    }
-
-
-    public void searchTypeThree(File f, String searchWord1,String searchWord2) throws FileNotFoundException{
-        Scanner s = new Scanner(f);
-        boolean word1Existance = false, word2Existance = false;
-        while(s.hasNextLine()){
-            String nextLine = s.nextLine();
-            if(nextLine.contains(searchWord1) || nextLine.contains(searchWord2)){
-                System.out.println(f);
-                break;
-            }
-        }
-    }
-
-
-    public void searchTypeFour(File f, String[] searchWord) throws FileNotFoundException{
-        Scanner s = new Scanner(f);
-        boolean check[] = new boolean[searchWord.length];
-        for(int i =0;i<check.length;i++){
-            check[i]= false;
-        }
-        while(s.hasNextLine()){
-            String nextLine = s.nextLine();
+        while(scan.hasNextLine()){
+            String nextLine = scan.nextLine();
             for(int i= 0;i < searchWord.length ;i+=2){
-                
-                    if(nextLine.contains(searchWord[i])){
-                        check[i] = true;
-                    }
+                if(nextLine.contains(searchWord[i])){
+                    wordExists[i] = true;
                 }
-            
+            }
         }
-        if(searchWord.length == 1 && check[0]){
-            System.out.println(f);
+        printFilesName(file, searchWord, wordExists);  
+    }
+
+
+    public void printFilesName(File file, String[] searchWord, boolean[] wordExists) throws FileNotFoundException{
+        if(searchWord.length == 1 && wordExists[0]){
+            System.out.println(file);
         }
         for(int i =0;i<searchWord.length;i++){
             if(searchWord[i].equals("AND")){
-                if(check[i-1] && check[i+1]){
-                    System.out.println(f);
+                if(wordExists[i-1] && wordExists[i+1]){
+                    System.out.println(file);
                     break;
-
                 }
             }
             else if(searchWord[i].equals("OR")){
                 if(i!=searchWord.length-2){
                     if(searchWord[i+2].equals("OR")){
-                        if(check[i+1]){
-                            System.out.println(f);
+                        if(wordExists[i+1]){
+                            System.out.println(file);
                             break;
                         }
                     }
                 }
-                else if(check[i+1]){
-                    System.out.println(f);
+                else if(wordExists[i+1]){
+                    System.out.println(file);
                     break;
+
                 }
             }
             else if(i==0 && searchWord[i+1].equals("OR")){
-                if(check[i]){
-                    System.out.println(f);
+                if(wordExists[i]){
+                    System.out.println(file);
                     break;
                 }
             }
-        }  
+        }
     }
 }
